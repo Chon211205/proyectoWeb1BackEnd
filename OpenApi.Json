@@ -64,7 +64,7 @@
     "/series": {
       "get": {
         "tags": ["Series"],
-        "summary": "Listar todas las series con paginación",
+        "summary": "Listar todas las series con paginación y búsqueda",
         "operationId": "listSeries",
         "parameters": [
           {
@@ -90,6 +90,16 @@
               "maximum": 100,
               "default": 10,
               "example": 5
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Buscar series por nombre",
+            "schema": {
+              "type": "string",
+              "example": "attack"
             }
           }
         ],

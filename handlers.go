@@ -37,9 +37,12 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 // Devuelve un handler que permite el acceso a la base de datos.
 func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		q := r.URL.Query().Get("q")
+
 		switch r.Method {
 
-		//Metodo GET (listar series). Paginacion agregada.
+		//Metodo GET (listar series). Paginacion agregada y busqueda por ?q=
 		case http.MethodGet:
 			pageStr := r.URL.Query().Get("page")
 			limitStr := r.URL.Query().Get("limit")
@@ -54,13 +57,13 @@ func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 				limit = 10
 			}
 
-			items, err := listSeries(db, page, limit)
+			items, err := listSeries(db, page, limit, q)
 			if err != nil {
 				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not list series"})
 				return
 			}
 
-			total, err := countSeries(db)
+			total, err := countSeries(db, q)
 			if err != nil {
 				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not count series"})
 				return

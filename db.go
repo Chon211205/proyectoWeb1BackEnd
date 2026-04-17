@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"strings"
 )
 
 // Estructura de la tabla de series
@@ -55,8 +56,8 @@ func initDB(db *sql.DB) error {
 	return nil
 }
 
-// Lista todas las series con SELECT Uniendo la tabla series y rating. Con paginacion
-func listSeries(db *sql.DB, page, limit int) ([]Series, error) {
+// Lista todas las series con SELECT Uniendo la tabla series y rating. Con paginacion y buscar con ?q=
+func listSeries(db *sql.DB, page, limit int, q string) ([]Series, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -66,15 +67,25 @@ func listSeries(db *sql.DB, page, limit int) ([]Series, error) {
 
 	offset := (page - 1) * limit
 
-	rows, err := db.Query(`
+	query := `
 		SELECT s.id, s.name, s.current_episode, s.total_episodes,
 		       COALESCE(s.image_url, '') AS image_url,
 		       COALESCE(r.rating, 0) AS rating
 		FROM series s
 		LEFT JOIN ratings r ON r.series_id = s.id
-		ORDER BY s.id DESC
-		LIMIT ? OFFSET ?
-	`, limit, offset)
+	`
+
+	args := []any{}
+
+	if q != "" {
+		query += " WHERE LOWER(s.name) LIKE ?"
+		args = append(args, "%"+strings.ToLower(q)+"%")
+	}
+
+	query += " ORDER BY s.id DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+
+	rows, err := db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,9 +103,18 @@ func listSeries(db *sql.DB, page, limit int) ([]Series, error) {
 	return series, rows.Err()
 }
 
-func countSeries(db *sql.DB) (int, error) {
+func countSeries(db *sql.DB, q string) (int, error) {
 	var total int
-	err := db.QueryRow(`SELECT COUNT(*) FROM series`).Scan(&total)
+
+	query := "SELECT COUNT(*) FROM series"
+	args := []any{}
+
+	if q != "" {
+		query += " WHERE LOWER(name) LIKE ?"
+		args = append(args, "%"+strings.ToLower(q)+"%")
+	}
+
+	err := db.QueryRow(query, args...).Scan(&total)
 	return total, err
 }
 
