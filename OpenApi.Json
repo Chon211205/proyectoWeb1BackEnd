@@ -285,7 +285,7 @@
         "properties": {
           "error": {
             "type": "string",
-            "example": "series not found"
+            "example": "No se encontro la serie"
           }
         }
       }

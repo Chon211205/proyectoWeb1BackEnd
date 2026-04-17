@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+//Error del api
 type apiError struct {
 	Error string `json:"error"`
 }
@@ -26,6 +27,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Codigo HTTP 200
 	writeJSON(w, http.StatusOK, map[string]string{
 		"name":    "Series Tracker API",
 		"version": "1.0.0",
@@ -50,6 +52,7 @@ func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 		case http.MethodPost:
 			var input SeriesInput
 			if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+				//Codigo HTTP status 400
 				writeJSON(w, http.StatusBadRequest, apiError{Error: "invalid JSON body"})
 				return
 			}
@@ -65,6 +68,7 @@ func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 			}
 
 			w.Header().Set("Location", "/series/"+strconv.Itoa(item.ID))
+			//Codigo HTTP 201
 			writeJSON(w, http.StatusCreated, item)
 		default:
 			writeJSON(w, http.StatusMethodNotAllowed, apiError{Error: "method not allowed"})
@@ -77,6 +81,7 @@ func seriesItemHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, ok := parseSeriesID(r.URL.Path)
 		if !ok {
+			//Codigo HTTP 404
 			writeJSON(w, http.StatusNotFound, apiError{Error: "not found"})
 			return
 		}
@@ -130,8 +135,10 @@ func seriesItemHandler(db *sql.DB) http.HandlerFunc {
 				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not delete series"})
 				return
 			}
+			//Codigo HTTP 204
 			w.WriteHeader(http.StatusNoContent)
 		default:
+			//Codigo HTTP 405
 			writeJSON(w, http.StatusMethodNotAllowed, apiError{Error: "method not allowed"})
 		}
 	}

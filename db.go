@@ -184,19 +184,19 @@ func upsertRating(db *sql.DB, seriesID int, rating int) error {
 // Verifica los datos antes de guardarlos en la base de datos.
 func validateSeries(input SeriesInput) error {
 	if input.Name == "" {
-		return errors.New("name is required")
+		return errors.New("Introduce un nombre valido")
 	}
 	if input.CurrentEpisode < 0 {
-		return errors.New("current_episode must be greater than or equal to 0")
+		return errors.New("El episodio actual debe ser mayor a 0")
 	}
 	if input.TotalEpisodes < 0 {
-		return errors.New("total_episodes must be greater than or equal to 0")
+		return errors.New("El total de episodios debe ser mayor a 0")
 	}
 	if input.TotalEpisodes > 0 && input.CurrentEpisode > input.TotalEpisodes {
-		return errors.New("current_episode cannot be greater than total_episodes")
+		return errors.New("El episodio actual no puede ser mayor al total de episodios")
 	}
 	if input.Rating < 0 || input.Rating > 10 {
-		return errors.New("rating must be between 0 and 10")
+		return errors.New("El rating debe ser entre 0 a 10")
 	}
 	return nil
 }
