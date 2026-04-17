@@ -1,0 +1,294 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Series Tracker API",
+    "version": "1.0.0",
+    "description": "API REST para gestionar series, progreso de episodios y rating."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Servidor local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Root",
+      "description": "Información general de la API"
+    },
+    {
+      "name": "Series",
+      "description": "Operaciones CRUD sobre series"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["Root"],
+        "summary": "Obtener información básica de la API",
+        "operationId": "getApiInfo",
+        "responses": {
+          "200": {
+            "description": "Información de la API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Series Tracker API"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0.0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ruta no encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/series": {
+      "get": {
+        "tags": ["Series"],
+        "summary": "Listar todas las series",
+        "operationId": "listSeries",
+        "responses": {
+          "200": {
+            "description": "Lista de series",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Series"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Series"],
+        "summary": "Crear una nueva serie",
+        "operationId": "createSeries",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeriesInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Serie creada",
+            "headers": {
+              "Location": {
+                "description": "Ruta del recurso creado",
+                "schema": {
+                  "type": "string",
+                  "example": "/series/1"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Series"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/series/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Series"],
+        "summary": "Obtener una serie por ID",
+        "operationId": "getSeriesById",
+        "responses": {
+          "200": {
+            "description": "Serie encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Series"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Series"],
+        "summary": "Actualizar serie",
+        "operationId": "updateSeries",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeriesInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Serie actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Series"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Series"],
+        "summary": "Eliminar serie",
+        "operationId": "deleteSeries",
+        "responses": {
+          "204": {
+            "description": "Eliminada correctamente"
+          },
+          "404": {
+            "description": "No encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Series": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Breaking Bad" },
+          "current_episode": { "type": "integer", "example": 5 },
+          "total_episodes": { "type": "integer", "example": 62 },
+          "image_url": {
+            "type": "string",
+            "example": "https://example.com/image.jpg"
+          },
+          "rating": { "type": "integer", "example": 9 }
+        }
+      },
+      "SeriesInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "current_episode",
+          "total_episodes",
+          "image_url",
+          "rating"
+        ],
+        "properties": {
+          "name": { "type": "string" },
+          "current_episode": { "type": "integer", "minimum": 0 },
+          "total_episodes": { "type": "integer", "minimum": 0 },
+          "image_url": { "type": "string" },
+          "rating": { "type": "integer", "minimum": 0, "maximum": 10 }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "series not found"
+          }
+        }
+      }
+    }
+  }
+}
