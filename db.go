@@ -55,8 +55,17 @@ func initDB(db *sql.DB) error {
 	return nil
 }
 
-// Lista todas las series con SELECT Uniendo la tabla series y rating.
-func listSeries(db *sql.DB) ([]Series, error) {
+// Lista todas las series con SELECT Uniendo la tabla series y rating. Con paginacion
+func listSeries(db *sql.DB, page, limit int) ([]Series, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+
 	rows, err := db.Query(`
 		SELECT s.id, s.name, s.current_episode, s.total_episodes,
 		       COALESCE(s.image_url, '') AS image_url,
@@ -64,13 +73,13 @@ func listSeries(db *sql.DB) ([]Series, error) {
 		FROM series s
 		LEFT JOIN ratings r ON r.series_id = s.id
 		ORDER BY s.id DESC
-	`)
+		LIMIT ? OFFSET ?
+	`, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	//Recorre las filas.
 	series := []Series{}
 	for rows.Next() {
 		item := Series{}
@@ -81,6 +90,12 @@ func listSeries(db *sql.DB) ([]Series, error) {
 	}
 
 	return series, rows.Err()
+}
+
+func countSeries(db *sql.DB) (int, error) {
+	var total int
+	err := db.QueryRow(`SELECT COUNT(*) FROM series`).Scan(&total)
+	return total, err
 }
 
 // Busca la serie por su ID

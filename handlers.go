@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-//Error del api
+// Error del api
 type apiError struct {
 	Error string `json:"error"`
 }
@@ -39,14 +39,41 @@ func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 
-		//Metodo GET (listar series)
+		//Metodo GET (listar series). Paginacion agregada.
 		case http.MethodGet:
-			items, err := listSeries(db)
+			pageStr := r.URL.Query().Get("page")
+			limitStr := r.URL.Query().Get("limit")
+
+			page, _ := strconv.Atoi(pageStr)
+			limit, _ := strconv.Atoi(limitStr)
+
+			if page <= 0 {
+				page = 1
+			}
+			if limit <= 0 || limit > 100 {
+				limit = 10
+			}
+
+			items, err := listSeries(db, page, limit)
 			if err != nil {
 				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not list series"})
 				return
 			}
-			writeJSON(w, http.StatusOK, items)
+
+			total, err := countSeries(db)
+			if err != nil {
+				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not count series"})
+				return
+			}
+
+			response := map[string]any{
+				"page":  page,
+				"limit": limit,
+				"total": total,
+				"data":  items,
+			}
+
+			writeJSON(w, http.StatusOK, response)
 
 		//Metodo POST (Agrega la serie)
 		case http.MethodPost:

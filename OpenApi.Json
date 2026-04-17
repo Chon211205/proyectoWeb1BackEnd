@@ -64,18 +64,42 @@
     "/series": {
       "get": {
         "tags": ["Series"],
-        "summary": "Listar todas las series",
+        "summary": "Listar todas las series con paginación",
         "operationId": "listSeries",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Número de página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Cantidad de elementos por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 5
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Lista de series",
+            "description": "Lista paginada de series",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Series"
-                  }
+                  "$ref": "#/components/schemas/PaginatedSeriesResponse"
                 }
               }
             }
@@ -213,6 +237,16 @@
               }
             }
           },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "No encontrada",
             "content": {
@@ -252,15 +286,30 @@
       "Series": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Breaking Bad" },
-          "current_episode": { "type": "integer", "example": 5 },
-          "total_episodes": { "type": "integer", "example": 62 },
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Breaking Bad"
+          },
+          "current_episode": {
+            "type": "integer",
+            "example": 5
+          },
+          "total_episodes": {
+            "type": "integer",
+            "example": 62
+          },
           "image_url": {
             "type": "string",
             "example": "https://example.com/image.jpg"
           },
-          "rating": { "type": "integer", "example": 9 }
+          "rating": {
+            "type": "integer",
+            "example": 9
+          }
         }
       },
       "SeriesInput": {
@@ -273,11 +322,48 @@
           "rating"
         ],
         "properties": {
-          "name": { "type": "string" },
-          "current_episode": { "type": "integer", "minimum": 0 },
-          "total_episodes": { "type": "integer", "minimum": 0 },
-          "image_url": { "type": "string" },
-          "rating": { "type": "integer", "minimum": 0, "maximum": 10 }
+          "name": {
+            "type": "string"
+          },
+          "current_episode": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total_episodes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10
+          }
+        }
+      },
+      "PaginatedSeriesResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "example": 5
+          },
+          "total": {
+            "type": "integer",
+            "example": 20
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Series"
+            }
+          }
         }
       },
       "ApiError": {
