@@ -25,8 +25,9 @@ func main() {
 
 	//Router
 	mux := http.NewServeMux()
-	//Registro de rutas.
+	//Registro de rutas y de swagger
 	registerRoutes(mux, db)
+	registerSwaggerRoutes(mux)
 
 	//peticiones desde frontend y evitar los errores cors
 	handler := corsMiddleware(mux)
