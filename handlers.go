@@ -55,7 +55,6 @@ func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 			sort := r.URL.Query().Get("sort")
 			order := r.URL.Query().Get("order")
 
-
 			if page <= 0 {
 				page = 1
 			}
@@ -112,19 +111,90 @@ func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+// handler de rating.
+func ratingHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, ok := parseRatingSeriesID(r.URL.Path)
+		if !ok {
+			writeJSON(w, http.StatusNotFound, apiError{Error: "not found"})
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			item, err := getRating(db, id)
+			if err == sql.ErrNoRows {
+				writeJSON(w, http.StatusNotFound, apiError{Error: "rating not found"})
+				return
+			}
+			if err != nil {
+				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not get rating"})
+				return
+			}
+			writeJSON(w, http.StatusOK, item)
+
+		case http.MethodPost, http.MethodPut:
+			var input RatingInput
+			if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+				writeJSON(w, http.StatusBadRequest, apiError{Error: "invalid JSON body"})
+				return
+			}
+
+			if err := validateRating(input); err != nil {
+				writeJSON(w, http.StatusBadRequest, apiError{Error: err.Error()})
+				return
+			}
+
+			item, err := upsertRating(db, id, input.Rating)
+			if err != nil {
+				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not save rating"})
+				return
+			}
+
+			if r.Method == http.MethodPost {
+				writeJSON(w, http.StatusCreated, item)
+				return
+			}
+
+			writeJSON(w, http.StatusOK, item)
+
+		case http.MethodDelete:
+			err := removeRating(db, id)
+			if err == sql.ErrNoRows {
+				writeJSON(w, http.StatusNotFound, apiError{Error: "rating not found"})
+				return
+			}
+			if err != nil {
+				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not delete rating"})
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+
+		default:
+			writeJSON(w, http.StatusMethodNotAllowed, apiError{Error: "method not allowed"})
+		}
+	}
+}
+
 // Handler para series especificas
 func seriesItemHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Si la ruta es /series/{id}/rating, delega al handler de rating
+		if strings.HasSuffix(r.URL.Path, "/rating") {
+			ratingHandler(db)(w, r)
+			return
+		}
+
 		id, ok := parseSeriesID(r.URL.Path)
 		if !ok {
-			//Codigo HTTP 404
+			// Codigo HTTP 404
 			writeJSON(w, http.StatusNotFound, apiError{Error: "not found"})
 			return
 		}
 
 		switch r.Method {
 
-		//Metodo GET (Buscar serie)
+		// Metodo GET (Buscar serie)
 		case http.MethodGet:
 			item, err := getSeries(db, id)
 			if err == sql.ErrNoRows {
@@ -137,7 +207,7 @@ func seriesItemHandler(db *sql.DB) http.HandlerFunc {
 			}
 			writeJSON(w, http.StatusOK, item)
 
-		//Metodo POST (Actualizar serie)
+		// Metodo PUT (Actualizar serie)
 		case http.MethodPut:
 			var input SeriesInput
 			if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -160,7 +230,7 @@ func seriesItemHandler(db *sql.DB) http.HandlerFunc {
 			}
 			writeJSON(w, http.StatusOK, item)
 
-		//Metodo DELETE (Eliminar una serie)
+		// Metodo DELETE (Eliminar una serie)
 		case http.MethodDelete:
 			err := removeSeries(db, id)
 			if err == sql.ErrNoRows {
@@ -171,10 +241,11 @@ func seriesItemHandler(db *sql.DB) http.HandlerFunc {
 				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not delete series"})
 				return
 			}
-			//Codigo HTTP 204
+			// Codigo HTTP 204
 			w.WriteHeader(http.StatusNoContent)
+
 		default:
-			//Codigo HTTP 405
+			// Codigo HTTP 405
 			writeJSON(w, http.StatusMethodNotAllowed, apiError{Error: "method not allowed"})
 		}
 	}
@@ -188,6 +259,24 @@ func parseSeriesID(path string) (int, bool) {
 	}
 
 	id, err := strconv.Atoi(idText)
+	if err != nil || id <= 0 {
+		return 0, false
+	}
+
+	return id, true
+}
+
+// Verifica el rating de series.
+func parseRatingSeriesID(path string) (int, bool) {
+	if !strings.HasPrefix(path, "/series/") || !strings.HasSuffix(path, "/rating") {
+		return 0, false
+	}
+
+	trimmed := strings.TrimPrefix(path, "/series/")
+	trimmed = strings.TrimSuffix(trimmed, "/rating")
+	trimmed = strings.Trim(trimmed, "/")
+
+	id, err := strconv.Atoi(trimmed)
 	if err != nil || id <= 0 {
 		return 0, false
 	}

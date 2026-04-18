@@ -22,7 +22,17 @@ type SeriesInput struct {
 	CurrentEpisode int    `json:"current_episode"`
 	TotalEpisodes  int    `json:"total_episodes"`
 	ImageURL       string `json:"image_url"`
-	Rating         int    `json:"rating"`
+}
+
+//Estructura de rating.
+type RatingResponse struct {
+	SeriesID int `json:"series_id"`
+	Rating   int `json:"rating"`
+}
+
+//
+type RatingInput struct {
+	Rating int `json:"rating"`
 }
 
 // Activa las claves foraneas en SQlite.
@@ -124,6 +134,61 @@ func listSeries(db *sql.DB, page, limit int, q, sort, order string) ([]Series, e
 	return series, rows.Err()
 }
 
+func validateRating(input RatingInput) error {
+	if input.Rating < 0 || input.Rating > 10 {
+		return errors.New("rating must be between 0 and 10")
+	}
+	return nil
+}
+
+func getRating(db *sql.DB, seriesID int) (RatingResponse, error) {
+	item := RatingResponse{}
+
+	err := db.QueryRow(`
+		SELECT series_id, rating
+		FROM ratings
+		WHERE series_id = ?
+	`, seriesID).Scan(&item.SeriesID, &item.Rating)
+
+	return item, err
+}
+
+func upsertRating(db *sql.DB, seriesID int, rating int) (RatingResponse, error) {
+	_, err := db.Exec(`
+		INSERT INTO ratings (series_id, rating)
+		VALUES (?, ?)
+		ON CONFLICT(series_id) DO UPDATE SET rating = excluded.rating
+	`, seriesID, rating)
+	if err != nil {
+		return RatingResponse{}, err
+	}
+
+	return getRating(db, seriesID)
+}
+
+func removeRating(db *sql.DB, seriesID int) error {
+	result, err := db.Exec(`
+		DELETE FROM ratings
+		WHERE series_id = ?
+	`, seriesID)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
+
+
 func countSeries(db *sql.DB, q string) (int, error) {
 	var total int
 
@@ -171,10 +236,6 @@ func createSeries(db *sql.DB, input SeriesInput) (Series, error) {
 		return Series{}, err
 	}
 
-	if err := upsertRating(db, int(id), input.Rating); err != nil {
-		return Series{}, err
-	}
-
 	return getSeries(db, int(id))
 }
 
@@ -200,10 +261,6 @@ func updateSeries(db *sql.DB, id int, input SeriesInput) (Series, error) {
 		return Series{}, sql.ErrNoRows
 	}
 
-	if err := upsertRating(db, id, input.Rating); err != nil {
-		return Series{}, err
-	}
-
 	return getSeries(db, id)
 }
 
@@ -225,34 +282,19 @@ func removeSeries(db *sql.DB, id int) error {
 	return nil
 }
 
-// Actualiza el rating en la tabla.
-func upsertRating(db *sql.DB, seriesID int, rating int) error {
-	_, err := db.Exec(
-		`INSERT INTO ratings (series_id, rating)
-		 VALUES (?, ?)
-		 ON CONFLICT(series_id) DO UPDATE SET rating = excluded.rating`,
-		seriesID,
-		rating,
-	)
-	return err
-}
-
 // Verifica los datos antes de guardarlos en la base de datos.
 func validateSeries(input SeriesInput) error {
 	if input.Name == "" {
-		return errors.New("Introduce un nombre valido")
+		return errors.New("name is required")
 	}
 	if input.CurrentEpisode < 0 {
-		return errors.New("El episodio actual debe ser mayor a 0")
+		return errors.New("current_episode must be greater than or equal to 0")
 	}
 	if input.TotalEpisodes < 0 {
-		return errors.New("El total de episodios debe ser mayor a 0")
+		return errors.New("total_episodes must be greater than or equal to 0")
 	}
 	if input.TotalEpisodes > 0 && input.CurrentEpisode > input.TotalEpisodes {
-		return errors.New("El episodio actual no puede ser mayor al total de episodios")
-	}
-	if input.Rating < 0 || input.Rating > 10 {
-		return errors.New("El rating debe ser entre 0 a 10")
+		return errors.New("current_episode cannot be greater than total_episodes")
 	}
 	return nil
 }

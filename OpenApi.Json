@@ -18,7 +18,7 @@
     },
     {
       "name": "Series",
-      "description": "Operaciones CRUD sobre series"
+      "description": "Operaciones CRUD sobre series y rating"
     }
   ],
   "paths": {
@@ -311,6 +311,160 @@
           }
         }
       }
+    },
+    "/series/{id}/rating": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Series"],
+        "summary": "Obtener rating de una serie",
+        "operationId": "getRating",
+        "responses": {
+          "200": {
+            "description": "Rating encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rating no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Series"],
+        "summary": "Crear rating de una serie",
+        "operationId": "createRating",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RatingInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Rating creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Serie no encontrada o rating no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Series"],
+        "summary": "Actualizar rating de una serie",
+        "operationId": "updateRating",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RatingInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rating actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Serie no encontrada o rating no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Series"],
+        "summary": "Eliminar rating de una serie",
+        "operationId": "deleteRating",
+        "responses": {
+          "204": {
+            "description": "Eliminado correctamente"
+          },
+          "404": {
+            "description": "No encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -350,8 +504,7 @@
           "name",
           "current_episode",
           "total_episodes",
-          "image_url",
-          "rating"
+          "image_url"
         ],
         "properties": {
           "name": {
@@ -367,11 +520,31 @@
           },
           "image_url": {
             "type": "string"
+          }
+        }
+      },
+      "RatingResponse": {
+        "type": "object",
+        "properties": {
+          "series_id": {
+            "type": "integer",
+            "example": 1
           },
           "rating": {
             "type": "integer",
+            "example": 9
+          }
+        }
+      },
+      "RatingInput": {
+        "type": "object",
+        "required": ["rating"],
+        "properties": {
+          "rating": {
+            "type": "integer",
             "minimum": 0,
-            "maximum": 10
+            "maximum": 10,
+            "example": 8
           }
         }
       },
