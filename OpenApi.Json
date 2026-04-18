@@ -64,7 +64,7 @@
     "/series": {
       "get": {
         "tags": ["Series"],
-        "summary": "Listar todas las series con paginación y búsqueda",
+        "summary": "Listar todas las series con paginación, búsqueda y ordenamiento",
         "operationId": "listSeries",
         "parameters": [
           {
@@ -100,6 +100,28 @@
             "schema": {
               "type": "string",
               "example": "attack"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Campo por el cual ordenar",
+            "schema": {
+              "type": "string",
+              "enum": ["name", "rating", "current_episode", "total_episodes"],
+              "example": "rating"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "Orden ascendente o descendente",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "example": "desc"
             }
           }
         ],

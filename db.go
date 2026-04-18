@@ -57,7 +57,7 @@ func initDB(db *sql.DB) error {
 }
 
 // Lista todas las series con SELECT Uniendo la tabla series y rating. Con paginacion y buscar con ?q=
-func listSeries(db *sql.DB, page, limit int, q string) ([]Series, error) {
+func listSeries(db *sql.DB, page, limit int, q, sort, order string) ([]Series, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -77,12 +77,33 @@ func listSeries(db *sql.DB, page, limit int, q string) ([]Series, error) {
 
 	args := []any{}
 
+	//Filtro
 	if q != "" {
 		query += " WHERE LOWER(s.name) LIKE ?"
 		args = append(args, "%"+strings.ToLower(q)+"%")
 	}
 
-	query += " ORDER BY s.id DESC LIMIT ? OFFSET ?"
+	//Ordenar
+	validSort := map[string]string{
+		"name":            "s.name",
+		"rating":          "r.rating",
+		"current_episode": "s.current_episode",
+		"total_episodes":  "s.total_episodes",
+	}
+
+	sortColumn, ok := validSort[sort]
+	if !ok {
+		sortColumn = "s.id"
+	}
+
+	if order != "asc" && order != "desc" {
+		order = "desc"
+	}
+
+	query += " ORDER BY " + sortColumn + " " + strings.ToUpper(order)
+
+	//Paginacion
+	query += " LIMIT ? OFFSET ?"
 	args = append(args, limit, offset)
 
 	rows, err := db.Query(query, args...)

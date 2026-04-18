@@ -44,11 +44,17 @@ func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 
 		//Metodo GET (listar series). Paginacion agregada y busqueda por ?q=
 		case http.MethodGet:
+
+			//Paginacion
 			pageStr := r.URL.Query().Get("page")
 			limitStr := r.URL.Query().Get("limit")
-
 			page, _ := strconv.Atoi(pageStr)
 			limit, _ := strconv.Atoi(limitStr)
+
+			//Orden y filtrado
+			sort := r.URL.Query().Get("sort")
+			order := r.URL.Query().Get("order")
+
 
 			if page <= 0 {
 				page = 1
@@ -57,7 +63,7 @@ func seriesCollectionHandler(db *sql.DB) http.HandlerFunc {
 				limit = 10
 			}
 
-			items, err := listSeries(db, page, limit, q)
+			items, err := listSeries(db, page, limit, q, sort, order)
 			if err != nil {
 				writeJSON(w, http.StatusInternalServerError, apiError{Error: "could not list series"})
 				return
