@@ -28,6 +28,10 @@ func main() {
 	//Registro de rutas y de swagger
 	registerRoutes(mux, db)
 	registerSwaggerRoutes(mux)
+	registerUploadRoutes(mux)
+
+	//Mandar las imagenes.
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
 	//peticiones desde frontend y evitar los errores cors
 	handler := corsMiddleware(mux)
