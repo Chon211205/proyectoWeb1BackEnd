@@ -2,6 +2,11 @@
 
 ## Instrucciones para correrlo localmente
 
+### Paso 1: git clone a los siguientes repositorios:
+
+- FrontEnd: https://github.com/Chon211205/proyecto1WebFront.git
+- Backend: 
+
 ## Screen Shoot de la app funcionando
 ### Aplicacion:
 <img width="3727" height="1914" alt="image" src="https://github.com/user-attachments/assets/25e6212e-4393-42f0-88b4-d2d84268f220" />
