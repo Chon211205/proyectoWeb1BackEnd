@@ -2,6 +2,22 @@
 
 ## Instrucciones para correrlo localmente
 
+### Paso 1: git clone a los siguientes repositorios:
+
+- FrontEnd: https://github.com/Chon211205/proyecto1WebFront.git
+- Backend: https://github.com/Chon211205/proyectoWeb1BackEnd.git
+
+### Paso 2: correr FrontEnd.
+
+- Levantar el servidor en la terminal de vscode con el siguiente comando: python -m http.server 5500
+- Dirigirse al siguiente puerto donde esta corriendo el FrontEnd: http://localhost:5500
+
+### Paso 3: correr BackEnd.
+
+- Levantar el servidor en otra terminal de vscode con el siguiente comando: go run .
+- Dirigirse al frontEnd y esperar a que conecte la API.
+- Puerto del Swagger-UI:http://localhost:8080/docs
+
 ## Screen Shoot de la app funcionando
 ### Aplicacion:
 <img width="3727" height="1914" alt="image" src="https://github.com/user-attachments/assets/25e6212e-4393-42f0-88b4-d2d84268f220" />
