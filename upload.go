@@ -24,7 +24,7 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// límite total de request: 1 MB + margen pequeño
+	// Límite total de request: 1 MB + margen pequeño
 	r.Body = http.MaxBytesReader(w, r.Body, 1_100_000)
 
 	err := r.ParseMultipartForm(1_100_000)
@@ -80,7 +80,14 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	scheme := "https"
+	if strings.HasPrefix(r.Host, "localhost") || strings.HasPrefix(r.Host, "127.0.0.1") {
+		scheme = "http"
+	}
+
+	imageURL := scheme + "://" + r.Host + "/uploads/" + filename
+
 	writeJSON(w, http.StatusCreated, uploadResponse{
-		ImageURL: "http://localhost:8080/uploads/" + filename,
+		ImageURL: imageURL,
 	})
 }
