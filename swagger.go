@@ -26,18 +26,28 @@ func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
   <title>Swagger UI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    body { margin: 0; background: #f5f7f8; }
+    #swagger-ui { max-width: 1200px; margin: 0 auto; }
+  </style>
 </head>
 <body>
   <div id="swagger-ui"></div>
 
   <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
   <script>
-    window.onload = () => {
-      window.ui = SwaggerUIBundle({
+    window.addEventListener("load", function () {
+      SwaggerUIBundle({
         url: "/openapi.json",
-        dom_id: "#swagger-ui"
+        dom_id: "#swagger-ui",
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout"
       });
-    };
+    });
   </script>
 </body>
 </html>`
