@@ -2,10 +2,10 @@
 
 ## Proyecto en el servidor subido: backend (Railway), frontend (vercel).
 
-Link del Frontend: https://proyecto1-web-front-ksx1.vercel.app/index.html
-Link del backend: https://proyectoweb1backend-production.up.railway.app
-Link del openapi: https://proyectoweb1backend-production.up.railway.app/openapi.json
-Link del swagger: https://proyectoweb1backend-production.up.railway.app/docs
+- Link del Frontend: https://proyecto1-web-front-ksx1.vercel.app/index.html
+- Link del backend: https://proyectoweb1backend-production.up.railway.app
+- Link del openapi: https://proyectoweb1backend-production.up.railway.app/openapi.json
+- Link del swagger: https://proyectoweb1backend-production.up.railway.app/docs
 
 
 ## Instrucciones para correrlo localmente
