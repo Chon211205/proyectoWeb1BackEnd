@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+//go:embed openapi.json
 var openAPISpec []byte
 
 func registerSwaggerRoutes(mux *http.ServeMux) {
@@ -25,29 +26,35 @@ func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
   <meta charset="utf-8">
   <title>Swagger UI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css">
   <style>
-    body { margin: 0; background: #f5f7f8; }
-    #swagger-ui { max-width: 1200px; margin: 0 auto; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #f5f7f8;
+    }
+    #swagger-ui {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
-  <div id="swagger-ui"></div>
+  <div id="swagger-ui">Cargando Swagger...</div>
 
-  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
   <script>
-    window.addEventListener("load", function () {
+    window.onload = function () {
+      if (typeof SwaggerUIBundle === "undefined") {
+        document.getElementById("swagger-ui").innerHTML = "No se pudo cargar Swagger UI desde el CDN.";
+        return;
+      }
+
       SwaggerUIBundle({
-        url: "/openapi.json",
-        dom_id: "#swagger-ui",
-        presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
-        ],
-        layout: "BaseLayout"
+        url: window.location.origin + "/openapi.json",
+        dom_id: "#swagger-ui"
       });
-    });
+    };
   </script>
 </body>
 </html>`
