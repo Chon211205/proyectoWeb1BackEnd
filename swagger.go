@@ -1,8 +1,6 @@
 package main
 
 import (
-	_ "embed"
-	"fmt"
 	"net/http"
 )
 
