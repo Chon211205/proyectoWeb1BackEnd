@@ -7,7 +7,7 @@ import (
 )
 
 //go:embed openapi.json
-var openAPISpec []byte
+var openAPISpec string
 
 func registerSwaggerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/openapi.json", serveOpenAPI)
@@ -17,7 +17,7 @@ func registerSwaggerRoutes(mux *http.ServeMux) {
 func serveOpenAPI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(openAPISpec)
+	_, _ = w.Write([]byte(openAPISpec))
 }
 
 func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
@@ -34,14 +34,16 @@ func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
   <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
   <script>
     window.onload = function () {
+      const spec = JSON.parse(%q);
+
       SwaggerUIBundle({
-        spec: %s,
+        spec: spec,
         dom_id: "#swagger-ui"
       });
     };
   </script>
 </body>
-</html>`, string(openAPISpec))
+</html>`, openAPISpec)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
