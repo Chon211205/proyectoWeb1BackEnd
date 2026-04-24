@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 )
 
 func registerSwaggerRoutes(mux *http.ServeMux) {
@@ -10,7 +11,14 @@ func registerSwaggerRoutes(mux *http.ServeMux) {
 }
 
 func serveOpenAPI(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "openapi.json")
+	// Verifica si el archivo existe
+	if _, err := os.Stat("openapi.json"); os.IsNotExist(err) {
+		http.Error(w, "openapi.json not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	http.ServeFile(w, r, "./openapi.json")
 }
 
 func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +49,7 @@ func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
   <script>
     window.onload = () => {
       window.ui = SwaggerUIBundle({
-        url: "/openapi.json",
+        url: window.location.origin + "/openapi.json",
         dom_id: "#swagger-ui"
       });
     };
@@ -51,5 +59,5 @@ func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(html))
+	w.Write([]byte(html))
 }
