@@ -1,11 +1,12 @@
 package main
 
 import (
+	_ "embed"
 	"net/http"
 )
 
 //go:embed openapi.json
-var openAPISpec string
+var openAPISpec []byte
 
 func registerSwaggerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/openapi.json", serveOpenAPI)
@@ -13,9 +14,9 @@ func registerSwaggerRoutes(mux *http.ServeMux) {
 }
 
 func serveOpenAPI(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(openAPISpec))
+	_, _ = w.Write(openAPISpec)
 }
 
 func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
@@ -24,24 +25,25 @@ func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
 <head>
   <meta charset="utf-8">
   <title>Swagger UI</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css">
 </head>
 <body>
   <div id="swagger-ui"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-standalone-preset.js"></script>
 
   <script>
     window.onload = function () {
       SwaggerUIBundle({
-        url: "https://proyectoweb1backend-production.up.railway.app/openapi.json",
+        url: "/openapi.json",
         dom_id: "#swagger-ui",
         presets: [
           SwaggerUIBundle.presets.apis,
           SwaggerUIStandalonePreset
         ],
-        layout: "BaseLayout"
+        layout: "StandaloneLayout"
       });
     };
   </script>
@@ -50,5 +52,5 @@ func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(html))
+	_, _ = w.Write([]byte(html))
 }
