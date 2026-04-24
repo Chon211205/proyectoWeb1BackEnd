@@ -16,43 +16,33 @@ func registerSwaggerRoutes(mux *http.ServeMux) {
 func serveOpenAPI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(openAPISpec)
+	w.Write(openAPISpec)
 }
 
 func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
 	html := `<!doctype html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8">
   <title>Swagger UI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css">
-  <style>
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      background: #f5f7f8;
-    }
-    #swagger-ui {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css">
 </head>
 <body>
-  <div id="swagger-ui">Cargando Swagger...</div>
+  <div id="swagger-ui"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
+
   <script>
     window.onload = function () {
-      if (typeof SwaggerUIBundle === "undefined") {
-        document.getElementById("swagger-ui").innerHTML = "No se pudo cargar Swagger UI desde el CDN.";
-        return;
-      }
-
       SwaggerUIBundle({
-        url: window.location.origin + "/openapi.json",
-        dom_id: "#swagger-ui"
+        url: "https://proyectoweb1backend-production.up.railway.app/openapi.json",
+        dom_id: "#swagger-ui",
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout"
       });
     };
   </script>
@@ -61,5 +51,5 @@ func serveSwaggerUI(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(html))
+	w.Write([]byte(html))
 }
